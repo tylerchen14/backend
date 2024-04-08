@@ -8,8 +8,13 @@ const io = require('socket.io')(server, {
 })
 
 const { v4: uuidV4 } = require('uuid')
-app.get('/05-streaming/', (req, res) => {
+
+app.get('/05-streaming', (req, res) => {
   res.redirect(`/05-streaming/${uuidV4()}`)
+})
+
+app.get('/:room', (req, res) => {
+  return room = req.params.room
 })
 
 // 確認連線
@@ -26,8 +31,8 @@ io.on('connection', socket => {
 
 })
 
-server.listen(3002, () => {
-  console.log('listening on port 3002')
+server.listen(3001, () => {
+  console.log('listening on port 3001')
 })
 
 // const io = require('socket.io')(4020, {

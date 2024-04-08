@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon chatroom_server.js --port 4040"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
