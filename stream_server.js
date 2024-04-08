@@ -1,12 +1,7 @@
 const express = require('express');
 const app = express()
 const server = require('http').Server(app)
-const io = require('socket.io')(server, {
-  cors: {
-    origin: ["http://localhost:3000"],
-  }
-})
-
+const io = require('socket.io')(server)
 
 const { v4: uuidV4 } = require('uuid')
 
@@ -21,4 +16,6 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(3030)
+server.listen(3000, () => {
+  console.log('listening on port 3030')
+})
