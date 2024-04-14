@@ -19,7 +19,7 @@ io.on('connection', socket => {
   }
 
   const handleSendComment = (newComment, room) => {
-    socket.to(room).emit('receiveComment', newComment)
+    io.to(room).emit('receiveComment', newComment)
     console.log({ newComment }, { room });
   }
 
@@ -30,7 +30,7 @@ io.on('connection', socket => {
       console.log(` 目前 '${room}' 中有 ${liveNum} 人`);
       io.to(room).emit("updateLiveNum", liveNum)
     } else {
-      console.log(`房间 ${room} 没有用戶`);
+      console.log(`房間 ${room} 没有用戶`);
     }
   }
 
@@ -40,7 +40,7 @@ io.on('connection', socket => {
   // 視訊
   socket.on('join-room', (room, id) => {
     socket.join(room)
-    socket.to(room).broadcast.emit('user-connected', id)
+    socket.broadcast.to(room).emit('user-connected', id)
   })
 })
 
