@@ -9,17 +9,30 @@ const io = require('socket.io')(server, {
 
 // 確認連線
 io.on('connection', socket => {
-  console.log(`連線成功，用戶號碼為 ${socket.id}`);
+  console.log(`用戶ID是 ${socket.id}`);
 
   // 聊天室
-
   socket.on('joinRoom', room => {
     socket.join(room)
+    console.log(`房間是 ${room}`);
+    updateLiveStatus(room);
   })
 
-  socket.on('sendComment', (comment, room) => {
-    io.to(room).emit('receiveComment', comment)
+  socket.on('sendComment', (newComment, room) => {
+    socket.to(room).emit('receiveComment', newComment)
+    console.log({newComment},{room});
   })
+
+  const updateLiveStatus = (room) => {
+    const users = io.sockets.adapter.rooms.get(room);
+    if (users) {
+      const liveNum = users.size;
+      console.log(` 目前 '${room}' 中有 ${liveNum} 人`);
+      io.to(room).emit("updateLiveNum", liveNum)
+    } else {
+      console.log(`房间 ${room} 没有用戶`);
+    }
+  }
 
   // 視訊
   socket.on('join-room', (room, id) => {
