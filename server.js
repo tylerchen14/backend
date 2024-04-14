@@ -12,16 +12,16 @@ io.on('connection', socket => {
   console.log(`用戶ID是 ${socket.id}`);
 
   // 聊天室
-  socket.on('joinRoom', room => {
+  const handleJoinRoom = (room) => {
     socket.join(room)
     console.log(`房間是 ${room}`);
     updateLiveStatus(room);
-  })
+  }
 
-  socket.on('sendComment', (newComment, room) => {
+  const handleSendComment = (newComment, room) => {
     socket.to(room).emit('receiveComment', newComment)
-    console.log({newComment},{room});
-  })
+    console.log({ newComment }, { room });
+  }
 
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
@@ -33,6 +33,9 @@ io.on('connection', socket => {
       console.log(`房间 ${room} 没有用戶`);
     }
   }
+
+  socket.on('joinRoom', handleJoinRoom);
+  socket.on('sendComment', handleSendComment)
 
   // 視訊
   socket.on('join-room', (room, id) => {
