@@ -19,10 +19,6 @@ io.on('connection', socket => {
 
   const handleSendComment = (newComment, room) => {
     io.to(room).emit('receiveComment', newComment)
-
-    console.log({ newComment }, { room });
-    console.log('handleSendComment');
-
   }
 
   const updateLiveStatus = (room) => {
@@ -42,8 +38,10 @@ io.on('connection', socket => {
   // 視訊
 
   const handleJoinVideoRoom = (room, id, role) => {
+
     socket.join(room);
-    if (role === 'streamer') {
+    
+    if (role === 'isStreamer') {
       io.in(room).emit('streamer-joined', id);
       console.log(`主播 ${id} 加入 ${room}`);
     } else {
@@ -51,11 +49,9 @@ io.on('connection', socket => {
       console.log(`觀眾 ${id} 加入 ${room}`);
     }
 
-
   };
 
   socket.on('join-room', handleJoinVideoRoom)
-
 })
 
 server.listen(3001, () => {
