@@ -9,11 +9,13 @@ const io = require('socket.io')(server, {
 
 // 確認連線
 io.on('connection', socket => {
-  console.log(`用戶ID是 ${socket.id}`);
+  console.log(`用戶ID ${socket.id} 已連線`);
+  let activeStreams = {};
 
   // 聊天室
-  const handleJoinRoom = (room) => {
+  const handleJoinRoom = (room, id) => {
     socket.join(room)
+
     console.log(`房間是 ${room}`);
     updateLiveStatus(room);
   }
@@ -38,10 +40,42 @@ io.on('connection', socket => {
   socket.on('sendComment', handleSendComment)
 
   // 視訊
-  socket.on('join-room', (room, id) => {
-    socket.join(room)
-    socket.broadcast.to(room).emit('user-connected', id)
-  })
+  // const handleJoinVideoRoom = (roomId, id, streamPath) => {
+  //   socket.join(roomId)
+  //   socket.broadcast.to(roomId).emit('user-connected', id)
+  //   console.log(`${id} 加入視訊房 ${roomId}`);
+  // }
+
+  const handleJoinVideoRoom = (roomId, id, streamPath) => {
+    socket.join(roomId);
+    activeStreams[roomId] = { streamerId: id, path: streamPath };
+    socket.broadcast.to(roomId).emit('user-connected', id, streamPath);
+    console.log(`${id} 加入視訊房 ${roomId}`);
+  };
+
+  socket.on('request-active-streams', () => {
+    socket.emit('active-streams', activeStreams);
+  });
+
+  //   if (role === 'streamer') {
+  //     socket.broadcast.to(room).emit('streamer-joined', id);
+  //     console.log(`Streamer ${id} joined room ${room}`);
+  // } else {
+  //     socket.broadcast.to(room).emit('viewer-joined', id);
+  //     console.log(`Viewer ${id} joined room ${room}`);
+  // }
+
+  // const handleLeaveVideoRoom = () => {
+  //   if (socket.roomId) {
+  //     socket.broadcast.to(socket.roomId).emit('user-disconnected', socket.id);
+  //     console.log(`${socket.id} 離開視訊房 ${socket.roomId}`);
+  //   }
+  // }
+
+
+  socket.on('join-room', handleJoinVideoRoom)
+  // socket.on('disconnect', handleLeaveVideoRoom);
+
 })
 
 server.listen(3001, () => {
