@@ -19,7 +19,10 @@ io.on('connection', socket => {
 
   const handleSendComment = (newComment, room) => {
     io.to(room).emit('receiveComment', newComment)
+
     console.log({ newComment }, { room });
+    console.log('handleSendComment');
+
   }
 
   const updateLiveStatus = (room) => {
