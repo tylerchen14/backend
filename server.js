@@ -6,6 +6,8 @@ const io = require('socket.io')(server, {
     origin: 'http://localhost:3000',
   },
 });
+import db from "./utils/mysql2_connect.js";
+const router = express.Router()
 
 // 確認連線
 io.on('connection', socket => {
@@ -36,11 +38,10 @@ io.on('connection', socket => {
   socket.on('sendComment', handleSendComment)
 
   // 視訊
-
   const handleJoinVideoRoom = (room, id, role) => {
 
     socket.join(room);
-    
+
     if (role === 'isStreamer') {
       io.in(room).emit('streamer-joined', id);
       console.log(`主播 ${id} 加入 ${room}`);
