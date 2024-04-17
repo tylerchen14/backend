@@ -108,6 +108,11 @@ io.on('connection', socket => {
     io.emit("unpinAll")
   }
 
+  // const handleGiveGift = (createGiftArray) => {
+  //   socket.broadcast.emit('giveGiftToRoom', createGiftArray)
+  // }
+  
+
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
     if (users) {
@@ -123,6 +128,7 @@ io.on('connection', socket => {
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
+  // socket.on('giveGive', handleGiveGift)
 
   // 視訊
   const handleJoinVideoRoom = (room, id, role) => {
