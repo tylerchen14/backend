@@ -37,7 +37,7 @@ app.get('/05-streaming/u-info/:pid', async (req, res) => {
 })
 
 // 抓用戶資料
-app.get('/05-streaming/u-pic/:pid', async (req, res) => {
+app.get('/user-pic/:pid', async (req, res) => {
   let pid = req.params.pid
   const sql = `SELECT * FROM mb_user_profile WHERE user_id=?`
   let [rows] = await db.query(sql, [pid])
@@ -66,7 +66,7 @@ app.get('/05-streaming/u-point/:pid', async (req, res) => {
 // 新增點數
 app.post('/add-point', async (req, res) => {
 
-  const  {userId}  = req.body
+  const { userId } = req.body
   let points = 100;
   let source = "頭像獎勵"
 
@@ -78,7 +78,7 @@ app.post('/add-point', async (req, res) => {
 // 刪除點數
 app.post('/use-point', async (req, res) => {
 
-  const  {userId, points, source}  = req.body
+  const { userId, points, source } = req.body
   console.log(req.body);
 
   const sql = `INSERT INTO tyler_use_point (user_id, point_use, effect_id, time_use_point) VALUES (?, ?, ?, CURRENT_TIMESTAMP())`
@@ -100,6 +100,14 @@ io.on('connection', socket => {
     io.to(room).emit('receiveComment', newComment)
   }
 
+  const handlePinnedComment = (pinI, pinP, pinN, pinC) => {
+    io.emit('pinnedAll', pinI, pinP, pinN, pinC)
+  }
+
+  const handleUnpinComment = () => {
+    io.emit("unpinAll")
+  }
+
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
     if (users) {
@@ -113,6 +121,8 @@ io.on('connection', socket => {
 
   socket.on('joinRoom', handleJoinRoom);
   socket.on('sendComment', handleSendComment)
+  socket.on('pinnedComment', handlePinnedComment)
+  socket.on('unpinComment', handleUnpinComment)
 
   // 視訊
   const handleJoinVideoRoom = (room, id, role) => {
