@@ -36,7 +36,7 @@ app.get('/05-streaming/u-info/:pid', async (req, res) => {
   res.json(rows)
 })
 
-// 抓用戶資料
+// 抓用戶圖片
 app.get('/user-pic/:pid', async (req, res) => {
   let pid = req.params.pid
   const sql = `SELECT * FROM mb_user_profile WHERE user_id=?`
@@ -88,8 +88,7 @@ app.post('/use-point', async (req, res) => {
 
 // 確認連線
 io.on('connection', socket => {
-  console.log(`用戶ID ${socket.id} 已連線`);
-
+  // console.log(`用戶ID ${socket.id} 已連線`);
   // 聊天室
   const handleJoinRoom = (room) => {
     socket.join(room)
@@ -111,7 +110,6 @@ io.on('connection', socket => {
   // const handleGiveGift = (createGiftArray) => {
   //   socket.broadcast.emit('giveGiftToRoom', createGiftArray)
   // }
-  
 
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
@@ -134,15 +132,15 @@ io.on('connection', socket => {
   const handleJoinVideoRoom = (room, id, role) => {
 
     socket.join(room);
+    console.log({ room });
 
     if (role === 'isStreamer') {
-      io.in(room).emit('streamer-joined', id);
-      console.log(`主播 ${id} 加入 ${room}`);
+      socket.emit('streamerStart', id)
+      console.log(`主播 ${id} 加入房間 ${room}`);
     } else {
-      io.in(room).emit('viewer-joined', id);
-      console.log(`觀眾 ${id} 加入 ${room}`);
+      socket.emit('viewerGo', id)
+      console.log(`觀眾 ${id} 加入房間 ${room}`)
     }
-
   };
 
   socket.on('join-room', handleJoinVideoRoom)
