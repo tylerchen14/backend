@@ -129,21 +129,21 @@ io.on('connection', socket => {
   // socket.on('giveGive', handleGiveGift)
 
   // 視訊
-  const handleJoinVideoRoom = (room, id, role) => {
+  const handleCheckRole = (id, role) => {
 
-    socket.join(room);
-    console.log({ room });
+    const room = 'livestream'
+    socket.join(room)
 
-    if (role === 'isStreamer') {
+    if (role == 'isStreamer') {
       socket.emit('streamerStart', id)
-      console.log(`主播 ${id} 加入房間 ${room}`);
+      console.log(`主播 ${id} 登入 ${room}`);
     } else {
       socket.emit('viewerGo', id)
-      console.log(`觀眾 ${id} 加入房間 ${room}`)
+      console.log(`觀眾 ${id} 登入 ${room}`)
     }
   };
 
-  socket.on('join-room', handleJoinVideoRoom)
+  socket.on('check-role', handleCheckRole)
 })
 
 let port = process.env.WEB_PORT || 3010
