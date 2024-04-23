@@ -109,28 +109,18 @@ app.get('/watch-stream/:name', async (req, res) => {
 
 // 確認連線
 io.on('connection', socket => {
-  // console.log(`用戶ID ${socket.id} 已連線`);
-  // 聊天室
-  const handleJoinRoom = (room) => {
-    socket.join(room)
-    updateLiveStatus(room);
-  }
 
   const handleSendComment = (newComment, room) => {
     io.to(room).emit('receiveComment', newComment)
   }
 
-  const handlePinnedComment = (pinI, pinP, pinN, pinC) => {
-    io.emit('pinnedAll', pinI, pinP, pinN, pinC)
+  const handlePinnedComment = (pinI, pinP, pinN, pinC, roomCode) => {
+    io.to(roomCode).emit('pinnedAll', pinI, pinP, pinN, pinC)
   }
 
-  const handleUnpinComment = () => {
-    io.emit("unpinAll")
+  const handleUnpinComment = (roomCode) => {
+    io.to(roomCode).emit("unpinAll")
   }
-
-  // const handleGiveGift = (createGiftArray) => {
-  //   socket.broadcast.emit('giveGiftToRoom', createGiftArray)
-  // }
 
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
@@ -143,33 +133,32 @@ io.on('connection', socket => {
     }
   }
 
-  socket.on('joinRoom', handleJoinRoom);
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
-  // socket.on('giveGive', handleGiveGift)
 
   // 視訊
   const handleCheckRole = (id, role) => {
 
-    const room = 'livestream'
-    socket.join(room)
-
     if (role == 'isStreamer') {
       socket.emit('streamerStart', id)
-      console.log(`主播 ${id} 登入 ${room}`);
+      socket.join(id)
+      console.log(`主播 ${id} 登入`);
+      updateLiveStatus(id);
     } else {
       socket.emit('viewerGo', id)
-      console.log(`觀眾 ${id} 登入 ${room}`)
     }
-
   };
 
+
+  const handleJoinStreamerRoom = (roomCode) => {
+    socket.join(roomCode)
+    updateLiveStatus(roomCode);
+    console.log(`一人登入 ${roomCode}`)
+  }
+
   socket.on('check-role', handleCheckRole)
-  // socket.on('giveCallId', id => {
-  //   io.emit('callThisId', id)
-  //   console.log({ id });
-  // })
+  socket.on('joinRoom', handleJoinStreamerRoom)
 })
 
 let port = process.env.WEB_PORT || 3010
