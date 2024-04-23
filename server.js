@@ -86,6 +86,27 @@ app.post('/use-point', async (req, res) => {
   res.json(rows)
 })
 
+// 登陸主播號碼
+app.post('/stream-logon', async (req, res) => {
+
+  const { streamId } = req.body
+  const streamerName = "tyler"
+
+  let sql = 'INSERT INTO tyler_stream (stream_code, time, streamer_name	) VALUES (?,  CURRENT_TIMESTAMP(),?)'
+  let [rows] = await db.query(sql, [streamId, streamerName])
+  res.json(rows)
+})
+
+app.get('/watch-stream/:name', async (req, res) => {
+
+  const name = req.params.name
+
+  const sql = `SELECT * FROM tyler_stream WHERE streamer_name=? ORDER BY time DESC LIMIT 1`
+  let [rows] = await db.query(sql, [name])
+  res.json(rows)
+})
+
+
 // 確認連線
 io.on('connection', socket => {
   // console.log(`用戶ID ${socket.id} 已連線`);
@@ -141,9 +162,14 @@ io.on('connection', socket => {
       socket.emit('viewerGo', id)
       console.log(`觀眾 ${id} 登入 ${room}`)
     }
+
   };
 
   socket.on('check-role', handleCheckRole)
+  // socket.on('giveCallId', id => {
+  //   io.emit('callThisId', id)
+  //   console.log({ id });
+  // })
 })
 
 let port = process.env.WEB_PORT || 3010
