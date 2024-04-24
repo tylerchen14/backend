@@ -106,7 +106,6 @@ app.get('/watch-stream/:name', async (req, res) => {
   res.json(rows)
 })
 
-
 // 確認連線
 io.on('connection', socket => {
 
@@ -157,8 +156,14 @@ io.on('connection', socket => {
     console.log(`一人登入 ${roomCode}`)
   }
 
+  const handleUserEnter = (userData, roomCode) => {
+    io.to(roomCode).emit('userGo', userData)
+  }
+
+
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
+  socket.on('userEnter', handleUserEnter)
 })
 
 let port = process.env.WEB_PORT || 3010
