@@ -81,7 +81,7 @@ app.post('/use-point', async (req, res) => {
   const { userId, points, source } = req.body
   console.log(req.body);
 
-  const sql = `INSERT INTO tyler_use_point (user_id, point_use, effect_id, time_use_point) VALUES (?, ?, ?, CURRENT_TIMESTAMP())`
+  const sql = `INSERT INTO tyler_use_point (user_id, point_use, gift, time_use_point) VALUES (?, ?, ?, CURRENT_TIMESTAMP())`
   let [rows] = await db.query(sql, [userId, points, source])
   res.json(rows)
 })
@@ -105,6 +105,25 @@ app.get('/watch-stream/:name', async (req, res) => {
   let [rows] = await db.query(sql, [name])
   res.json(rows)
 })
+
+app.post('/give-streamer-point', async (req, res) => {
+
+  const { name, gift, point } = req.body
+
+  let sql = 'INSERT INTO tyler_streamer_get_point (streamer_name, gift, get_point, time) VALUES (?, ?, ?, CURRENT_TIMESTAMP())'
+  let [rows] = await db.query(sql, [name, gift, point])
+  res.json(rows)
+})
+
+app.get('/totalBonus/:name', async (req, res) => {
+  const name = req.params.name
+
+  const sql = `SELECT * FROM tyler_streamer_get_point WHERE streamer_name=?`
+  let [rows] = await db.query(sql, [name])
+  let totalPoints = rows.reduce((acc, row) => acc + row.get_point, 0);
+  res.json(totalPoints)
+})
+
 
 // 確認連線
 io.on('connection', socket => {
@@ -132,9 +151,15 @@ io.on('connection', socket => {
     }
   }
 
+  // const handleCheckBonus = (totalBonus, roomCode) => {
+  //   socket.to(roomCode).emit("checkBonus", totalBonus)
+  // }
+
+
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
+  // socket.on('totalGift', handleCheckBonus)
 
   // 視訊
   const handleCheckRole = (id, role) => {
