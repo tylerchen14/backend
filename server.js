@@ -13,6 +13,7 @@ app.use(express.json());
 
 import db from './utils/mysql2_connect.js';
 import cors from "cors";
+import { log } from 'console';
 const corsOptions = {
   credentials: true,
   origin: (origin, callback) => {
@@ -124,7 +125,6 @@ app.get('/totalBonus/:name', async (req, res) => {
   res.json(totalPoints)
 })
 
-
 // 確認連線
 io.on('connection', socket => {
 
@@ -151,15 +151,15 @@ io.on('connection', socket => {
     }
   }
 
-  // const handleCheckBonus = (totalBonus, roomCode) => {
-  //   socket.to(roomCode).emit("checkBonus", totalBonus)
-  // }
+  const handleUpdateBonus = (data, roomCode) => {
+    socket.to(roomCode).emit("updateBonus", data)
+  }
 
 
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
-  // socket.on('totalGift', handleCheckBonus)
+  socket.on('totalBonus', handleUpdateBonus)
 
   // 視訊
   const handleCheckRole = (id, role) => {
@@ -174,21 +174,40 @@ io.on('connection', socket => {
     }
   };
 
-
   const handleJoinStreamerRoom = (roomCode) => {
     socket.join(roomCode)
     updateLiveStatus(roomCode);
     console.log(`一人登入 ${roomCode}`)
   }
 
-  const handleUserEnter = (userData, roomCode) => {
-    io.to(roomCode).emit('userGo', userData)
+  let viewerIdList = []
+  // let viewerNameList = []
+
+  const handleUserEnter = (userData, roomCode, viewerId) => {
+
+    if (viewerIdList.includes(viewerId)) {
+      console.log('已經在聊天室了');
+    } else if (viewerId === "") {
+      console.log(`你送空ID`);
+    } else {
+      viewerIdList.push(viewerId)
+      // viewerNameList.push(userData.name)
+      io.to(roomCode).emit('userGo', userData.name)
+      console.log({ viewerIdList });
+    }
+  }
+
+  const handleAddMember = (roomCode, memberList) => {
+    io.to(roomCode).emit('memberAdd', memberList)
+    // FIXME:有問題
+    console.log({ memberList });
   }
 
 
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
   socket.on('userEnter', handleUserEnter)
+  socket.on('addMember', handleAddMember)
 })
 
 let port = process.env.WEB_PORT || 3010
