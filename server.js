@@ -124,6 +124,9 @@ app.get('/totalBonus/:name', async (req, res) => {
   res.json(totalPoints)
 })
 
+
+let viewerIdList = [];
+
 // 確認連線
 io.on('connection', socket => {
 
@@ -178,12 +181,10 @@ io.on('connection', socket => {
     updateLiveStatus(roomCode);
     console.log(`一人登入 ${roomCode}`)
   }
-
-  let viewerIdList = []
-
+  
   const handleUserEnter = (userData, roomCode) => {
-
-    if (viewerIdList.find(el => el.viewerId === userData.viewerId)) {
+    const item = viewerIdList.find(el => el.viewerId === userData.viewerId)
+    if (item) {
       console.log('已經在聊天室了');
     } else if (userData.viewerId === "") {
       console.log(`你送空ID`);
@@ -194,6 +195,11 @@ io.on('connection', socket => {
     }
   }
 
+  const handleShowGift = (roomCode, giftRain) => {
+    io.to(roomCode).emit('showGift', giftRain)
+  }
+
+
   // FIXME:有問題
   // const handleStreamGo = (isStreaming) => {
   //   io.emit('streamGo', isStreaming)
@@ -203,6 +209,7 @@ io.on('connection', socket => {
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
   socket.on('userEnter', handleUserEnter)
+  socket.on('showGift', handleShowGift)
   // socket.on('streamGo', handleStreamGo)
 })
 
