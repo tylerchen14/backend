@@ -1,8 +1,8 @@
-import express from 'express'
-const app = express()
+import express from 'express';
 import { Server as HttpServer } from 'http';
-const server = new HttpServer(app);
 import { Server as SocketIOServer } from 'socket.io';
+const app = express()
+const server = new HttpServer(app);
 const io = new SocketIOServer(server, {
   cors: {
     origin: 'http://localhost:3000',
@@ -11,9 +11,8 @@ const io = new SocketIOServer(server, {
 
 app.use(express.json());
 
-import db from './utils/mysql2_connect.js';
 import cors from "cors";
-import { log } from 'console';
+import db from './utils/mysql2_connect.js';
 const corsOptions = {
   credentials: true,
   origin: (origin, callback) => {
@@ -181,33 +180,30 @@ io.on('connection', socket => {
   }
 
   let viewerIdList = []
-  // let viewerNameList = []
 
-  const handleUserEnter = (userData, roomCode, viewerId) => {
+  const handleUserEnter = (userData, roomCode) => {
 
-    if (viewerIdList.includes(viewerId)) {
+    if (viewerIdList.find(el => el.viewerId === userData.viewerId)) {
       console.log('已經在聊天室了');
-    } else if (viewerId === "") {
+    } else if (userData.viewerId === "") {
       console.log(`你送空ID`);
     } else {
-      viewerIdList.push(viewerId)
-      // viewerNameList.push(userData.name)
-      io.to(roomCode).emit('userGo', userData.name)
+      viewerIdList.push(userData)
+      io.to(roomCode).emit('userGo', viewerIdList)
       console.log({ viewerIdList });
     }
   }
 
-  const handleAddMember = (roomCode, memberList) => {
-    io.to(roomCode).emit('memberAdd', memberList)
-    // FIXME:有問題
-    console.log({ memberList });
-  }
+  // FIXME:有問題
+  // const handleStreamGo = (isStreaming) => {
+  //   io.emit('streamGo', isStreaming)
+  // }
 
 
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
   socket.on('userEnter', handleUserEnter)
-  socket.on('addMember', handleAddMember)
+  // socket.on('streamGo', handleStreamGo)
 })
 
 let port = process.env.WEB_PORT || 3010
