@@ -67,7 +67,7 @@ app.get('/05-streaming/u-point/:pid', async (req, res) => {
 app.post('/add-point', async (req, res) => {
 
   const { userId } = req.body
-  let points = 100;
+  let points = 1000;
   let source = "頭像獎勵"
 
   const sql = `INSERT INTO tyler_get_point (user_id, has_point, source, time_has_point) VALUES (?, ?, ?, CURRENT_TIMESTAMP())`
@@ -126,6 +126,7 @@ app.get('/totalBonus/:name', async (req, res) => {
 
 
 let viewerIdList = [];
+// let roomName = ""
 
 // 確認連線
 io.on('connection', socket => {
@@ -142,6 +143,8 @@ io.on('connection', socket => {
     io.to(roomCode).emit("unpinAll")
   }
 
+
+  // FIXME:人數在離開時對不上
   const updateLiveStatus = (room) => {
     const users = io.sockets.adapter.rooms.get(room);
     if (users) {
@@ -150,6 +153,7 @@ io.on('connection', socket => {
       io.to(room).emit("updateLiveNum", liveNum)
     } else {
       console.log(`房間 ${room} 没有用戶`);
+      io.to(room).emit("updateLiveNum", 0)
     }
   }
 
@@ -170,6 +174,8 @@ io.on('connection', socket => {
       socket.join(id)
       console.log(`主播 ${id} 登入`);
       updateLiveStatus(id);
+      // roomName = id;
+      // console.log({roomName});
     } else {
       socket.emit('viewerGo', id, socket.id)
       console.log(`觀眾 ${id} 登入`);
@@ -179,6 +185,7 @@ io.on('connection', socket => {
   const handleJoinStreamerRoom = (roomCode) => {
     socket.join(roomCode)
     updateLiveStatus(roomCode);
+    console.log({roomCode});
     console.log(`一人登入 ${roomCode}`)
   }
 
@@ -201,26 +208,22 @@ io.on('connection', socket => {
   }
 
   const handleDisconnect = () => {
-        const i = viewerIdList.findIndex(viewer => viewer.socketId === socket.id);
-        console.log({i});
-        if (i !== -1) {
-          viewerIdList.splice(i, 1)
-          io.emit('userGo', viewerIdList)
-        }
+    const i = viewerIdList.findIndex(viewer => viewer.socketId === socket.id);
+    console.log({ i });
+    if (i !== -1) {
+      viewerIdList.splice(i, 1)
+      io.emit('userGo', viewerIdList)
+    }
+    // updateLiveStatus(roomName)
+    // console.log(`退出房${roomName}`);
     console.log(`${socket.id}用戶退出`);
   }
-
-  // FIXME:有問題
-  // const handleStreamGo = (isStreaming) => {
-  //   io.emit('streamGo', isStreaming)
-  // }
 
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
   socket.on('userEnter', handleUserEnter)
   socket.on('showGift', handleShowGift)
   socket.on('disconnecting', handleDisconnect)
-  // socket.on('streamGo', handleStreamGo)
 })
 
 let port = process.env.WEB_PORT || 3010
