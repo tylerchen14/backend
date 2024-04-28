@@ -157,7 +157,6 @@ io.on('connection', socket => {
     socket.to(roomCode).emit("updateBonus", data)
   }
 
-
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
@@ -172,7 +171,8 @@ io.on('connection', socket => {
       console.log(`主播 ${id} 登入`);
       updateLiveStatus(id);
     } else {
-      socket.emit('viewerGo', id)
+      socket.emit('viewerGo', id, socket.id)
+      console.log(`觀眾 ${id} 登入`);
     }
   };
 
@@ -181,9 +181,10 @@ io.on('connection', socket => {
     updateLiveStatus(roomCode);
     console.log(`一人登入 ${roomCode}`)
   }
-  
+
   const handleUserEnter = (userData, roomCode) => {
     const item = viewerIdList.find(el => el.viewerId === userData.viewerId)
+
     if (item) {
       console.log('已經在聊天室了');
     } else if (userData.viewerId === "") {
@@ -199,17 +200,26 @@ io.on('connection', socket => {
     io.to(roomCode).emit('showGift', giftRain)
   }
 
+  const handleDisconnect = () => {
+        const i = viewerIdList.findIndex(viewer => viewer.socketId === socket.id);
+        console.log({i});
+        if (i !== -1) {
+          viewerIdList.splice(i, 1)
+          io.emit('userGo', viewerIdList)
+        }
+    console.log(`${socket.id}用戶退出`);
+  }
 
   // FIXME:有問題
   // const handleStreamGo = (isStreaming) => {
   //   io.emit('streamGo', isStreaming)
   // }
 
-
   socket.on('check-role', handleCheckRole)
   socket.on('joinRoom', handleJoinStreamerRoom)
   socket.on('userEnter', handleUserEnter)
   socket.on('showGift', handleShowGift)
+  socket.on('disconnecting', handleDisconnect)
   // socket.on('streamGo', handleStreamGo)
 })
 
