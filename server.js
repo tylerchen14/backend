@@ -161,10 +161,21 @@ io.on('connection', socket => {
     socket.to(roomCode).emit("updateBonus", data)
   }
 
+  const handleSendTitle = (title, room) => {
+    io.to(room).emit("sendTitle", title)
+  }
+
+  const handleSendDescript = (description, room) => {
+    io.to(room).emit("sendDescript", description)
+  }
+  
+
   socket.on('sendComment', handleSendComment)
   socket.on('pinnedComment', handlePinnedComment)
   socket.on('unpinComment', handleUnpinComment)
   socket.on('totalBonus', handleUpdateBonus)
+  socket.on('sendTitle', handleSendTitle)
+  socket.on('sendDescript', handleSendDescript)
 
   // 視訊
   const handleCheckRole = (id, role) => {
